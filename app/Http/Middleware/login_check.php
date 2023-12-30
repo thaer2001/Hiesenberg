@@ -5,7 +5,9 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
-use App\Models\User;
+use App\Models\Pharmacist;
+use App\Models\keeper;
+use App\Models\Keepr;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Hash;
 
@@ -19,7 +21,12 @@ class login_check
                 return $this->errorResponse();
             }
 
-            $user=User::where('phone_number',$request->input('phone_number'))->first();
+            $user_agent=$request->header('User-Agent');
+            if($user_agent=="pharmacist"){
+                $user=Pharmacist::where('phone_number',$request->input('phone_number'))->first();}
+            else{
+                $user=Keeper::where('phone_number',$request->input('phone_number'))->first();   
+            }
 
             if(!$user){
                 Log::info('User not found');
@@ -28,7 +35,7 @@ class login_check
 
             $password=$user->password;
 
-            if(!Hash::check($request->input('password'),$password)){
+            if($request->input('password')!=$password){
                 Log::info('Incorrect password');
                 return $this->errorResponse();
             }

@@ -2,11 +2,12 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Keeper;
+use App\Models\Pharmacist;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Auth;
-use App\Models\User;
 
 class verifyApiToken
 {
@@ -24,13 +25,16 @@ class verifyApiToken
             ]);
         }
         $hashedToken=hash('sha256',$token);
-        $user=User::where('api_token',$hashedToken)->first();
+        $user=Keeper::where('api_token',$hashedToken)->first();
         // $user=Auth::guard('api')->user();
         if(!$user){
+            $user=Pharmacist::where('api_token',$hashedToken)->first();
+        }
+        if(!$user)
             return response()->json([
                 'error'=>'Invalid Token'
             ]);
-        }
+        
         Auth::login($user);
         return $next($request);
     }
